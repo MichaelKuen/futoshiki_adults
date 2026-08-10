@@ -1,4 +1,4 @@
-package com.example.futoshiki_for_kids
+package com.example.futoshiki_adults
 
 import io.flutter.embedding.android.FlutterActivity
 
