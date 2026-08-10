@@ -1,11 +1,11 @@
 {
-    "name": "futoshiki_for_kids",
-    "short_name": "futoshiki_for_kids",
+    "name": "futoshiki_adults",
+    "short_name": "futoshiki_adults",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "A challenging Futoshiki inequality puzzle game for adults.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

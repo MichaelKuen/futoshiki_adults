@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:futoshiki_for_kids/main.dart';
+import 'package:futoshiki_adults/main.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
