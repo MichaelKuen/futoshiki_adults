@@ -19,7 +19,7 @@ const Map<int, Color> kDigitPadColours = {
   7: Color(0xFFFFBEF0),
 };
 
-final ThemeData kidsTheme = ThemeData(
+final ThemeData adultsTheme = ThemeData(
   useMaterial3: true,
   colorScheme: ColorScheme.fromSeed(
     seedColor: kPrimary,

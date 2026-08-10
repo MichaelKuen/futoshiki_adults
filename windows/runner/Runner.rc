@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "futoshiki_for_kids" "\0"
+            VALUE "FileDescription", "Futoshiki for Adults" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "futoshiki_for_kids" "\0"
+            VALUE "InternalName", "futoshiki_adults" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "futoshiki_for_kids.exe" "\0"
-            VALUE "ProductName", "futoshiki_for_kids" "\0"
+            VALUE "OriginalFilename", "futoshiki_adults.exe" "\0"
+            VALUE "ProductName", "Futoshiki for Adults" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -7,6 +7,6 @@ void main() {
     await tester.pumpWidget(
       const ProviderScope(child: FutoshikiApp()),
     );
-    expect(find.text('Futoshiki for Kids'), findsWidgets);
+    expect(find.text('Futoshiki for Adults'), findsWidgets);
   });
 }

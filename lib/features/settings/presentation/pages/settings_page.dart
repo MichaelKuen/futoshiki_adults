@@ -143,9 +143,9 @@ class SettingsPage extends ConsumerWidget {
               const SizedBox(height: 12),
 
               Text(
-                'Futoshiki for Kids\nVersion 1.0.0\n\n'
-                'A child-friendly inequality puzzle — no ads, no data collected, '
-                'just fun and learning!',
+                'Futoshiki for Adults\nVersion 1.0.0\n\n'
+                'A challenging inequality puzzle for adults — no ads, no data collected, '
+                'just pure puzzle satisfaction!',
                 style: TextStyle(
                   fontSize: 15,
                   color: Colors.grey.shade700,

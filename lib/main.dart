@@ -14,8 +14,8 @@ class FutoshikiApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Futoshiki for Kids',
-      theme: kidsTheme,
+      title: 'Futoshiki for Adults',
+      theme: adultsTheme,
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );

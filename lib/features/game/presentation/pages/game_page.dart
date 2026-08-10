@@ -202,7 +202,7 @@ class _GamePageState extends ConsumerState<GamePage> {
     if (isWideScreen) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Futoshiki for Kids ⚖️'),
+          title: const Text('Futoshiki for Adults ⚖️'),
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.home),
@@ -238,7 +238,7 @@ class _GamePageState extends ConsumerState<GamePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Futoshiki for Kids ⚖️'),
+        title: const Text('Futoshiki for Adults ⚖️'),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.home),
@@ -301,7 +301,7 @@ class _StatsBar extends StatelessWidget {
           ),
           Row(
             children: [
-              const Text('Oops: ', style: TextStyle(fontSize: 16)),
+              const Text('Mistakes: ', style: TextStyle(fontSize: 16)),
               Text(
                 '${state.mistakes}',
                 style: TextStyle(

@@ -46,7 +46,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Futoshiki for Kids'),
+        title: const Text('Futoshiki for Adults'),
         centerTitle: true,
         actions: [
           IconButton(
@@ -78,7 +78,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               // Title
               Center(
                 child: Text(
-                  'Futoshiki for Kids',
+                  'Futoshiki for Adults',
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
