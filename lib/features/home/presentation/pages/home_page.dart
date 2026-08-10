@@ -64,30 +64,30 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // Animated emoji
               Center(
-                child: const Text('⚖️', style: TextStyle(fontSize: 60))
+                child: const Text('⚖️', style: TextStyle(fontSize: 48))
                     .animate()
                     .scale(duration: 600.ms, curve: Curves.elasticOut),
               ),
 
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
 
               // Title
               Center(
                 child: Text(
                   'Futoshiki for Adults',
                   style: TextStyle(
-                    fontSize: 26,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: kPrimary,
                   ),
                 ),
               ),
 
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
 
               // Grid size indicator
               Center(
@@ -97,11 +97,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // How to play
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: kSecondary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(14),
@@ -124,7 +124,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // Continue Game card (shown only when a save exists)
               ref.watch(hasSavedGameProvider).when(
@@ -204,7 +204,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
               _DifficultyButton(
                 emoji: '⭐',
@@ -214,7 +214,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onTap: () => _startGame(Difficulty.easy),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
               _DifficultyButton(
                 emoji: '⭐⭐',
@@ -224,7 +224,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onTap: () => _startGame(Difficulty.medium),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
               _DifficultyButton(
                 emoji: '⭐⭐⭐',
@@ -234,7 +234,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onTap: () => _startGame(Difficulty.advanced),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
               _DifficultyButton(
                 emoji: '⭐⭐⭐⭐',
@@ -244,7 +244,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onTap: () => _startGame(Difficulty.expert),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
               _DifficultyButton(
                 emoji: '💀',
@@ -254,7 +254,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onTap: () => _startGame(Difficulty.insane),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
 
               Center(
                 child: TextButton(
@@ -325,7 +325,7 @@ class _DifficultyButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 66,
+        height: 60,
         decoration: BoxDecoration(
           color: colour,
           borderRadius: BorderRadius.circular(16),
