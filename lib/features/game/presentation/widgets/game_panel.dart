@@ -1,0 +1,500 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../domain/models/game_state.dart';
+import '../providers/game_provider.dart';
+import '../providers/settings_provider.dart';
+
+class GamePanel extends ConsumerWidget {
+  const GamePanel({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final constraintStyle = ref.watch(constraintStyleNotifierProvider);
+
+    return Container(
+      color: Colors.white,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Place Numbers ───────────────────────────────────────────
+            const _SectionHeader('Place Numbers'),
+            const SizedBox(height: 2),
+            const _PlaceModeOption(
+                label: 'Solution', value: PlaceMode.solution),
+            const _PlaceModeOption(
+                label: 'Pencil Marks', value: PlaceMode.pencilMarks),
+
+            const _PanelDivider(),
+
+            // ── Solving Aids ────────────────────────────────────────────
+            const _SectionHeader('Solving Aids'),
+            const SizedBox(height: 2),
+            _PanelCheckbox(
+              label: 'Show Repeated Digits',
+              getter: (s) => s.showRepeatedDigits,
+              onToggle: (ref) => ref
+                  .read(gameNotifierProvider.notifier)
+                  .toggleShowRepeatedDigits(),
+            ),
+            _PanelCheckbox(
+              label: 'Show Broken Inequalities',
+              getter: (s) => s.showBrokenInequalities,
+              onToggle: (ref) => ref
+                  .read(gameNotifierProvider.notifier)
+                  .toggleShowBrokenInequalities(),
+            ),
+            _PanelCheckbox(
+              label: 'Show Wrong Moves',
+              getter: (s) => s.showWrongMoves,
+              onToggle: (ref) => ref
+                  .read(gameNotifierProvider.notifier)
+                  .toggleShowWrongMoves(),
+            ),
+            _PanelCheckbox(
+              label: 'Auto Remove Pencil Marks',
+              getter: (s) => s.autoRemovePencilMarks,
+              onToggle: (ref) => ref
+                  .read(gameNotifierProvider.notifier)
+                  .toggleAutoRemovePencilMarks(),
+            ),
+
+            const _PanelDivider(),
+
+            // ── Actions (2-column grid) ─────────────────────────────────
+            const _SectionHeader('Actions'),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: _PanelButton(
+                    label: 'Check',
+                    icon: Icons.check_circle_outline,
+                    colour: const Color(0xFF4CAF50),
+                    onPressed: (context, ref) {
+                      ref.read(gameNotifierProvider.notifier).checkSolution();
+                      final board = ref.read(gameNotifierProvider).board;
+                      if (board == null) return;
+                      final errorCount = board.cells
+                          .expand((r) => r)
+                          .where((c) => c.isError)
+                          .length;
+                      showDialog<void>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          content: Text(
+                            board.isComplete
+                                ? '🎉 All correct!'
+                                : errorCount == 0
+                                    ? '✅ No mistakes yet!'
+                                    : '❌ $errorCount cell${errorCount == 1 ? '' : 's'} to fix.',
+                            style: const TextStyle(fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _PanelButton(
+                    label: 'Save',
+                    icon: Icons.save_outlined,
+                    colour: const Color(0xFF1976D2),
+                    onPressed: (context, ref) async {
+                      await ref.read(gameNotifierProvider.notifier).saveGame();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Game saved!'),
+                            duration: Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: _PanelButton(
+                    label: 'Reset',
+                    icon: Icons.refresh,
+                    colour: const Color(0xFFF57C00),
+                    onPressed: (context, ref) {
+                      showDialog<void>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          title: const Text('Reset Puzzle?'),
+                          content: const Text(
+                            'This will clear all your progress. Are you sure?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFF57C00),
+                                foregroundColor: Colors.white,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                ref
+                                    .read(gameNotifierProvider.notifier)
+                                    .resetPuzzle();
+                              },
+                              child: const Text('Reset'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _PanelButton(
+                    label: 'Show Solution',
+                    icon: Icons.lightbulb_outline,
+                    colour: const Color(0xFF9C27B0),
+                    onPressed: (context, ref) {
+                      showDialog<void>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          title: const Text('Show the Solution?'),
+                          content: const Text(
+                            "The full solution will be filled in. "
+                            "You won't be able to undo this.",
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF9C27B0),
+                                foregroundColor: Colors.white,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                ref
+                                    .read(gameNotifierProvider.notifier)
+                                    .giveUp();
+                              },
+                              child: const Text('Show It'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            const _PanelDivider(),
+
+            // ── Help ────────────────────────────────────────────────────
+            const _SectionHeader('How to read the symbols'),
+            const SizedBox(height: 6),
+            _HelpSection(constraintStyle: constraintStyle),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Internal helpers ──────────────────────────────────────────────────────────
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.title);
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.bold,
+        color: kPrimary,
+      ),
+    );
+  }
+}
+
+class _PanelDivider extends StatelessWidget {
+  const _PanelDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Divider(color: Colors.grey.shade200),
+    );
+  }
+}
+
+class _PlaceModeOption extends ConsumerWidget {
+  const _PlaceModeOption({required this.label, required this.value});
+  final String label;
+  final PlaceMode value;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isSelected =
+        ref.watch(gameNotifierProvider.select((s) => s.placeMode == value));
+    return InkWell(
+      onTap: () =>
+          ref.read(gameNotifierProvider.notifier).setPlaceMode(value),
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+        child: Row(
+          children: [
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: isSelected ? kPrimary : Colors.grey.shade400,
+              size: 18,
+            ),
+            const SizedBox(width: 6),
+            Text(label, style: const TextStyle(fontSize: 13)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PanelCheckbox extends ConsumerWidget {
+  const _PanelCheckbox({
+    required this.label,
+    required this.getter,
+    required this.onToggle,
+  });
+
+  final String label;
+  final bool Function(GameState) getter;
+  final void Function(WidgetRef) onToggle;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final checked = ref.watch(gameNotifierProvider.select(getter));
+    return InkWell(
+      onTap: () => onToggle(ref),
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: Checkbox(
+                value: checked,
+                onChanged: (_) => onToggle(ref),
+                activeColor: kPrimary,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3)),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PanelButton extends StatelessWidget {
+  const _PanelButton({
+    required this.label,
+    required this.icon,
+    required this.colour,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color colour;
+  final void Function(BuildContext, WidgetRef) onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, _) => SizedBox(
+        width: double.infinity,
+        height: 36,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colour,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ),
+          onPressed: () => onPressed(context, ref),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 15),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  style: const TextStyle(fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Help section with live symbol examples ────────────────────────────────────
+
+class _HelpSection extends StatelessWidget {
+  const _HelpSection({required this.constraintStyle});
+  final ConstraintStyle constraintStyle;
+
+  String _hSym(bool isLessThan) => switch (constraintStyle) {
+        ConstraintStyle.classic => isLessThan ? '<' : '>',
+        ConstraintStyle.arrows => isLessThan ? '←' : '→',
+        ConstraintStyle.triangles => isLessThan ? '◁' : '▷',
+      };
+
+  String _vSym(bool isLessThan) => switch (constraintStyle) {
+        ConstraintStyle.classic => isLessThan ? '∨' : '∧',
+        ConstraintStyle.arrows => isLessThan ? '↑' : '↓',
+        ConstraintStyle.triangles => isLessThan ? '△' : '▽',
+      };
+
+  String get _rule => switch (constraintStyle) {
+        ConstraintStyle.classic => 'The open side faces the bigger number.',
+        ConstraintStyle.arrows => 'The tip always points to the smaller number.',
+        ConstraintStyle.triangles =>
+          'The tip always points to the smaller number.',
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final gt = _hSym(false); // "4 [gt] 1" → 4 is bigger
+    final lt = _hSym(true);  // "1 [lt] 4" → 1 is smaller
+    final vGt = _vSym(false); // top bigger
+    final vLt = _vSym(true);  // top smaller
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(_rule,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+        const SizedBox(height: 6),
+        _ExampleRow(
+          label: 'Horizontal:',
+          examples: [
+            _Example('5 $gt 2', '5 is bigger'),
+            _Example('1 $lt 4', '4 is bigger'),
+          ],
+        ),
+        const SizedBox(height: 4),
+        _ExampleRow(
+          label: 'Vertical:',
+          examples: [
+            _Example('$vGt between rows', 'top is bigger'),
+            _Example('$vLt between rows', 'bottom is bigger'),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '• Fill every row & column with numbers 1–N.\n'
+          '• Each number appears exactly once per row and column.\n'
+          '• 💡 Hint reveals one correct cell.',
+          style: const TextStyle(fontSize: 11, height: 1.5),
+        ),
+      ],
+    );
+  }
+}
+
+class _Example {
+  const _Example(this.symbol, this.meaning);
+  final String symbol;
+  final String meaning;
+}
+
+class _ExampleRow extends StatelessWidget {
+  const _ExampleRow({required this.label, required this.examples});
+  final String label;
+  final List<_Example> examples;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700)),
+        const SizedBox(height: 2),
+        for (final ex in examples)
+          Padding(
+            padding: const EdgeInsets.only(left: 8, bottom: 1),
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(fontSize: 12, color: Colors.black87),
+                children: [
+                  TextSpan(
+                    text: ex.symbol,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: kConstraint,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '  →  ${ex.meaning}',
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
