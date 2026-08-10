@@ -6,7 +6,7 @@ part 'game_state.g.dart';
 
 enum GameStatus { initial, loading, playing, won, breakTime, gaveUp }
 
-enum Difficulty { easy, medium }
+enum Difficulty { easy, medium, advanced, expert, insane }
 
 enum PlaceMode { solution, pencilMarks }
 

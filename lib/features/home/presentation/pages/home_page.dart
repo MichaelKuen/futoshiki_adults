@@ -224,6 +224,36 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onTap: () => _startGame(Difficulty.medium),
               ),
 
+              const SizedBox(height: 10),
+
+              _DifficultyButton(
+                emoji: '⭐⭐⭐',
+                label: 'Advanced',
+                subtitle: 'Minimal clues given — serious challenge',
+                colour: const Color(0xFFFFB3BA),
+                onTap: () => _startGame(Difficulty.advanced),
+              ),
+
+              const SizedBox(height: 10),
+
+              _DifficultyButton(
+                emoji: '⭐⭐⭐⭐',
+                label: 'Expert',
+                subtitle: 'Very few clues — for puzzle veterans',
+                colour: const Color(0xFFC3B1E1),
+                onTap: () => _startGame(Difficulty.expert),
+              ),
+
+              const SizedBox(height: 10),
+
+              _DifficultyButton(
+                emoji: '💀',
+                label: 'Insane',
+                subtitle: 'Almost no clues — the ultimate test',
+                colour: const Color(0xFFFF6B6B),
+                onTap: () => _startGame(Difficulty.insane),
+              ),
+
               const SizedBox(height: 20),
 
               Center(

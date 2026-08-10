@@ -66,6 +66,9 @@ const _$GameStatusEnumMap = {
 const _$DifficultyEnumMap = {
   Difficulty.easy: 'easy',
   Difficulty.medium: 'medium',
+  Difficulty.advanced: 'advanced',
+  Difficulty.expert: 'expert',
+  Difficulty.insane: 'insane',
 };
 
 const _$PlaceModeEnumMap = {

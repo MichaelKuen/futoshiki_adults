@@ -10,7 +10,7 @@ class FutoshikiGenerator {
   FutoshikiBoard generate(int gridSize, Difficulty difficulty) {
     assert(gridSize == 5 || gridSize == 6 || gridSize == 7);
     final sol = _generateLatinSquare(gridSize, _rng);
-    final constraints = _generateConstraints(sol, gridSize, _rng);
+    final constraints = _generateConstraints(sol, gridSize, difficulty, _rng);
     return _createPuzzle(sol, constraints, gridSize, difficulty, _rng);
   }
 
@@ -52,8 +52,18 @@ class FutoshikiGenerator {
 
   // ── Step 2: Constraint selection ─────────────────────────────────────────
 
+  int _targetConstraintCount(int n, Difficulty difficulty) {
+    final base = n == 5 ? 10 : (n == 6 ? 14 : 18);
+    return switch (difficulty) {
+      Difficulty.easy || Difficulty.medium => base,
+      Difficulty.advanced => base + 4,
+      Difficulty.expert => base + 7,
+      Difficulty.insane => base + 11,
+    };
+  }
+
   List<FutoshikiConstraint> _generateConstraints(
-      List<List<int>> sol, int n, Random rng) {
+      List<List<int>> sol, int n, Difficulty difficulty, Random rng) {
     final pairs = <List<int>>[];
 
     for (int r = 0; r < n; r++) {
@@ -69,7 +79,7 @@ class FutoshikiGenerator {
 
     pairs.shuffle(rng);
 
-    final targetCount = n == 5 ? 10 : (n == 6 ? 14 : 18);
+    final targetCount = _targetConstraintCount(n, difficulty);
     final selected = pairs.take(targetCount);
 
     return selected.map((p) {
@@ -93,9 +103,13 @@ class FutoshikiGenerator {
     Difficulty difficulty,
     Random rng,
   ) {
-    final targetGivens = difficulty == Difficulty.easy
-        ? (n * n * 0.55).ceil()
-        : (n * n * 0.38).ceil();
+    final targetGivens = switch (difficulty) {
+      Difficulty.easy     => (n * n * 0.55).ceil(),
+      Difficulty.medium   => (n * n * 0.38).ceil(),
+      Difficulty.advanced => (n * n * 0.28).ceil(),
+      Difficulty.expert   => (n * n * 0.20).ceil(),
+      Difficulty.insane   => (n * n * 0.12).ceil(),
+    };
 
     // Working copy of solution; 0 = removed
     final grid = List.generate(n, (r) => List<int>.from(sol[r]));
