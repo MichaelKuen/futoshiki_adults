@@ -325,7 +325,6 @@ class _DifficultyButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 60,
         decoration: BoxDecoration(
           color: colour,
           borderRadius: BorderRadius.circular(16),
@@ -337,14 +336,15 @@ class _DifficultyButton extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 24)),
-            const SizedBox(width: 14),
+            Text(emoji, style: const TextStyle(fontSize: 22)),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(label,
