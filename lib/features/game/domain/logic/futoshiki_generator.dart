@@ -7,6 +7,16 @@ import '../models/game_state.dart';
 class FutoshikiGenerator {
   final _rng = Random();
 
+  /// Generation runs on the UI thread (web has no isolates), so clue removal
+  /// is time-boxed. When the budget runs out the remaining clues stay; the
+  /// puzzle is still guaranteed to have exactly one solution.
+  static const Duration removalBudget = Duration(milliseconds: 300);
+
+  /// Search-node cap for a single uniqueness check. Hitting it counts as
+  /// "not proven unique", so the clue is kept.
+  static const int _maxNodesPerCheck = 200000;
+  int _nodes = 0;
+
   FutoshikiBoard generate(int gridSize, Difficulty difficulty) {
     assert(gridSize == 5 || gridSize == 6 || gridSize == 7);
     final sol = _generateLatinSquare(gridSize, _rng);
@@ -116,14 +126,17 @@ class FutoshikiGenerator {
 
     final positions = List.generate(n * n, (i) => i)..shuffle(rng);
     int givens = n * n;
+    final clock = Stopwatch()..start();
 
     for (final pos in positions) {
       if (givens <= targetGivens) break;
+      if (clock.elapsed > removalBudget) break;
       final r = pos ~/ n;
       final c = pos % n;
       final saved = grid[r][c];
       grid[r][c] = 0;
 
+      _nodes = 0;
       final count = _countSolutions(grid, constraints, n, 2);
       if (count == 1) {
         givens--;
@@ -174,6 +187,7 @@ class FutoshikiGenerator {
     }
 
     if (emptyRow == -1) return 1; // complete assignment
+    if (++_nodes > _maxNodesPerCheck) return maxCount; // give up: keep clue
 
     int count = 0;
     for (int d = 1; d <= n; d++) {
