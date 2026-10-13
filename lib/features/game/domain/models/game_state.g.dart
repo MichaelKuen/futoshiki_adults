@@ -59,7 +59,6 @@ const _$GameStatusEnumMap = {
   GameStatus.loading: 'loading',
   GameStatus.playing: 'playing',
   GameStatus.won: 'won',
-  GameStatus.breakTime: 'breakTime',
   GameStatus.gaveUp: 'gaveUp',
 };
 

@@ -24,8 +24,6 @@ Future<bool> hasSavedGame(Ref ref) async {
 
 @Riverpod(keepAlive: true)
 class GameNotifier extends _$GameNotifier {
-  static const int breakIntervalSeconds = 600;
-
   final _engine = FutoshikiEngine();
   Timer? _timer;
 
@@ -48,7 +46,6 @@ class GameNotifier extends _$GameNotifier {
       difficulty: difficulty,
       gridSize: gridSize,
       elapsedSeconds: 0,
-      playSecondsThisSegment: 0,
       mistakes: 0,
       selectedRow: null,
       selectedCol: null,
@@ -65,25 +62,7 @@ class GameNotifier extends _$GameNotifier {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
-      if (state.status == GameStatus.playing) {
-        final next = state.playSecondsThisSegment + 1;
-        if (next >= breakIntervalSeconds) {
-          state = state.copyWith(
-            playSecondsThisSegment: next,
-            status: GameStatus.breakTime,
-          );
-        } else {
-          state = state.copyWith(playSecondsThisSegment: next);
-        }
-      }
     });
-  }
-
-  void acknowledgeBreak() {
-    state = state.copyWith(
-      playSecondsThisSegment: 0,
-      status: GameStatus.playing,
-    );
   }
 
   // ── Cell selection ────────────────────────────────────────────────────────

@@ -8,7 +8,6 @@ import '../providers/game_provider.dart';
 import '../widgets/digit_pad.dart';
 import '../widgets/futoshiki_grid.dart';
 import '../widgets/game_panel.dart';
-import 'break_page.dart';
 
 class GamePage extends ConsumerStatefulWidget {
   const GamePage({super.key});
@@ -124,17 +123,6 @@ class _GamePageState extends ConsumerState<GamePage> {
         _confettiController.play();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _showWinDialog(next.elapsedSeconds);
-        });
-      }
-      if (previous?.status != GameStatus.breakTime &&
-          next.status == GameStatus.breakTime) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute<void>(builder: (_) => const BreakPage()),
-            );
-          }
         });
       }
     });

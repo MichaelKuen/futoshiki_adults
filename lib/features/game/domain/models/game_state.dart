@@ -4,7 +4,7 @@ import 'board.dart';
 part 'game_state.freezed.dart';
 part 'game_state.g.dart';
 
-enum GameStatus { initial, loading, playing, won, breakTime, gaveUp }
+enum GameStatus { initial, loading, playing, won, gaveUp }
 
 enum Difficulty { easy, medium, advanced, expert, insane }
 
