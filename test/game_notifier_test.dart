@@ -82,7 +82,8 @@ void main() {
     notifier().selectCell(1, 1);
     notifier().useHint();
     expect(value(1, 1), 3);
-    expect(state().board!.cells[1][1].isFixed, isTrue);
+    expect(state().board!.cells[1][1].isRevealed, isTrue);
+    expect(state().board!.cells[1][1].isFixed, isFalse);
     expect(state().mistakes, 0);
   });
 

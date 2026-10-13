@@ -280,7 +280,9 @@ class GameNotifier extends _$GameNotifier {
     final correct = board.getSolution(row, col);
     final hinted = cell.copyWith(
       value: correct,
-      isFixed: true,
+      // Revealed, not fixed: hinted cells keep their own colour so they
+      // are not mistaken for the original clues.
+      isRevealed: true,
       isError: false,
       pencilMarks: const <int>[],
     );
