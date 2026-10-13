@@ -22,8 +22,7 @@ class FutoshikiGrid extends ConsumerWidget {
     if (board == null) return const SizedBox.shrink();
 
     final n = board.size;
-    final showConstraintErrors =
-        state.showBrokenInequalities && state.showWrongMoves;
+    final showConstraintErrors = state.showBrokenInequalities;
     final constraintStyle = ref.watch(constraintStyleNotifierProvider);
 
     return Container(
