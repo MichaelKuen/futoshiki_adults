@@ -87,12 +87,16 @@ void main() {
     expect(state().mistakes, 0);
   });
 
-  test('filling every cell correctly wins', () {
+  test('filling every cell correctly wins and clears the save', () async {
+    await notifier().saveGame();
+    expect(await container.read(hasSavedGameProvider.future), isTrue);
     for (final (r, c) in kEmpty) {
       notifier().selectCell(r, c);
       notifier().inputDigit(kSolution[r][c]);
     }
     expect(state().status, GameStatus.won);
+    await Future<void>.delayed(Duration.zero);
+    expect(await container.read(hasSavedGameProvider.future), isFalse);
   });
 
   test('give up reveals the solution', () {

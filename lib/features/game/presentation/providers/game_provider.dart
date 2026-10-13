@@ -146,10 +146,7 @@ class GameNotifier extends _$GameNotifier {
     state = state.copyWith(board: finalBoard, mistakes: mistakes);
     _highlightCells(row, col);
 
-    if (finalBoard.isComplete) {
-      _timer?.cancel();
-      state = state.copyWith(status: GameStatus.won);
-    }
+    if (finalBoard.isComplete) _onWon();
   }
 
   void _togglePencilMark(int digit) {
@@ -282,10 +279,14 @@ class GameNotifier extends _$GameNotifier {
     state = state.copyWith(board: finalBoard);
     _highlightCells(row, col);
 
-    if (finalBoard.isComplete) {
-      _timer?.cancel();
-      state = state.copyWith(status: GameStatus.won);
-    }
+    if (finalBoard.isComplete) _onWon();
+  }
+
+  void _onWon() {
+    _timer?.cancel();
+    state = state.copyWith(status: GameStatus.won);
+    // A solved puzzle shouldn't come back as "Continue Game".
+    unawaited(clearSavedGame());
   }
 
   // ── Panel settings toggles ────────────────────────────────────────────────
@@ -409,6 +410,13 @@ class GameNotifier extends _$GameNotifier {
     };
 
     await prefs.setString('saved_game', jsonEncode(save));
+    ref.invalidate(hasSavedGameProvider);
+  }
+
+  Future<void> clearSavedGame() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('saved_game');
+    ref.invalidate(hasSavedGameProvider);
   }
 
   Future<bool> loadSavedGame() async {
