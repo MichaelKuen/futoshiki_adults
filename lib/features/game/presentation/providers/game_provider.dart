@@ -330,13 +330,17 @@ class GameNotifier extends _$GameNotifier {
   void resetPuzzle() {
     final initial = state.initialBoard;
     if (initial == null) return;
+    final wasStopped = state.status != GameStatus.playing;
     state = state.copyWith(
       board: initial,
+      status: GameStatus.playing,
       selectedRow: null,
       selectedCol: null,
       mistakes: 0,
       placeMode: PlaceMode.solution,
     );
+    // After Show Solution (or a win) the timer was stopped.
+    if (wasStopped) _startTimer();
   }
 
   void giveUp() {

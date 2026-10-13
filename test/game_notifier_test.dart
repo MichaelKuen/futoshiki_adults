@@ -111,6 +111,15 @@ void main() {
     expect(state().status, GameStatus.playing);
   });
 
+  test('reset after show solution makes the board playable again', () {
+    notifier().giveUp();
+    notifier().resetPuzzle();
+    expect(state().status, GameStatus.playing);
+    expect(value(0, 0), 0);
+    notifier().selectCell(0, 0);
+    expect(state().selectedRow, 0);
+  });
+
   test('save then load restores the board', () async {
     notifier().selectCell(0, 0);
     notifier().inputDigit(1);
