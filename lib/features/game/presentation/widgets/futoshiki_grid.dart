@@ -8,6 +8,7 @@ import '../../domain/models/cell.dart';
 import '../../domain/models/constraint.dart';
 import '../providers/game_provider.dart';
 import '../providers/settings_provider.dart';
+import 'constraint_symbol.dart';
 
 class FutoshikiGrid extends ConsumerWidget {
   const FutoshikiGrid({super.key});
@@ -59,13 +60,13 @@ class FutoshikiGrid extends ConsumerWidget {
                               .selectCell(r, c),
                         ),
                         if (c < n - 1)
-                          _HConstraintWidget(
+                          _ConstraintSlot(
                             width: _constraintSlotW,
                             height: cellSize,
                             constraint:
                                 FutoshikiEngine().hConstraint(board, r, c),
-                            leftValue: board.cells[r][c].value,
-                            rightValue: board.cells[r][c + 1].value,
+                            firstValue: board.cells[r][c].value,
+                            secondValue: board.cells[r][c + 1].value,
                             showErrors: showConstraintErrors,
                             style: constraintStyle,
                           ),
@@ -76,13 +77,13 @@ class FutoshikiGrid extends ConsumerWidget {
                     Row(
                       children: [
                         for (int c = 0; c < n; c++) ...[
-                          _VConstraintWidget(
+                          _ConstraintSlot(
                             width: cellSize,
                             height: _constraintSlotH,
                             constraint:
                                 FutoshikiEngine().vConstraint(board, r, c),
-                            topValue: board.cells[r][c].value,
-                            bottomValue: board.cells[r + 1][c].value,
+                            firstValue: board.cells[r][c].value,
+                            secondValue: board.cells[r + 1][c].value,
                             showErrors: showConstraintErrors,
                             style: constraintStyle,
                           ),
@@ -239,15 +240,16 @@ class _PencilMarkGrid extends StatelessWidget {
   }
 }
 
-// ── Horizontal constraint ─────────────────────────────────────────────────────
+// ── Constraint slot ───────────────────────────────────────────────────────────
 
-class _HConstraintWidget extends StatelessWidget {
-  const _HConstraintWidget({
+/// The gap between two cells, showing the inequality between them (if any).
+class _ConstraintSlot extends StatelessWidget {
+  const _ConstraintSlot({
     required this.width,
     required this.height,
     required this.constraint,
-    required this.leftValue,
-    required this.rightValue,
+    required this.firstValue,
+    required this.secondValue,
     required this.showErrors,
     required this.style,
   });
@@ -255,100 +257,36 @@ class _HConstraintWidget extends StatelessWidget {
   final double width;
   final double height;
   final FutoshikiConstraint? constraint;
-  final int leftValue;
-  final int rightValue;
+
+  /// Left (horizontal) or top (vertical) cell value, then the other one.
+  final int firstValue;
+  final int secondValue;
   final bool showErrors;
   final ConstraintStyle style;
 
-  String _symbol(bool isLessThan) => switch (style) {
-        ConstraintStyle.classic => isLessThan ? '<' : '>',
-        // tip points toward the smaller cell
-        ConstraintStyle.arrows => isLessThan ? '←' : '→',
-        ConstraintStyle.triangles => isLessThan ? '◁' : '▷',
-      };
-
   @override
   Widget build(BuildContext context) {
-    if (constraint == null) {
-      return SizedBox(width: width, height: height);
-    }
+    final con = constraint;
+    if (con == null) return SizedBox(width: width, height: height);
 
-    final symbol = _symbol(constraint!.isLessThan);
     final isViolated = showErrors &&
-        leftValue != 0 &&
-        rightValue != 0 &&
-        ((constraint!.isLessThan && leftValue >= rightValue) ||
-            (!constraint!.isLessThan && leftValue <= rightValue));
+        firstValue != 0 &&
+        secondValue != 0 &&
+        (con.isLessThan
+            ? firstValue >= secondValue
+            : firstValue <= secondValue);
 
     return SizedBox(
       width: width,
       height: height,
       child: Center(
-        child: Text(
-          symbol,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: isViolated ? kConstraintErr : kConstraint,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Vertical constraint ───────────────────────────────────────────────────────
-
-class _VConstraintWidget extends StatelessWidget {
-  const _VConstraintWidget({
-    required this.width,
-    required this.height,
-    required this.constraint,
-    required this.topValue,
-    required this.bottomValue,
-    required this.showErrors,
-    required this.style,
-  });
-
-  final double width;
-  final double height;
-  final FutoshikiConstraint? constraint;
-  final int topValue;
-  final int bottomValue;
-  final bool showErrors;
-  final ConstraintStyle style;
-
-  String _symbol(bool isLessThan) => switch (style) {
-        ConstraintStyle.classic => isLessThan ? '∧' : '∨',
-        // tip points toward the smaller cell
-        ConstraintStyle.arrows => isLessThan ? '↑' : '↓',
-        ConstraintStyle.triangles => isLessThan ? '△' : '▽',
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    if (constraint == null) {
-      return SizedBox(width: width, height: height);
-    }
-
-    final symbol = _symbol(constraint!.isLessThan);
-    final isViolated = showErrors &&
-        topValue != 0 &&
-        bottomValue != 0 &&
-        ((constraint!.isLessThan && topValue >= bottomValue) ||
-            (!constraint!.isLessThan && topValue <= bottomValue));
-
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Center(
-        child: Text(
-          symbol,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: isViolated ? kConstraintErr : kConstraint,
-          ),
+        child: ConstraintSymbol(
+          dir: con.isHorizontal
+              ? ConstraintSymbol.horizontal(con.isLessThan)
+              : ConstraintSymbol.vertical(con.isLessThan),
+          style: style,
+          color: isViolated ? kConstraintErr : kConstraint,
+          size: (width < height ? width : height) * 0.62,
         ),
       ),
     );

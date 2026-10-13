@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../game/presentation/providers/settings_provider.dart';
+import '../../../game/presentation/widgets/constraint_symbol.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -101,8 +102,6 @@ class SettingsPage extends ConsumerWidget {
                 style: ConstraintStyle.classic,
                 label: 'Classic',
                 description: 'Traditional maths symbols',
-                hSymbols: '< >',
-                vSymbols: '∧ ∨',
                 colour: const Color(0xFFE3F2FD),
               ),
 
@@ -112,8 +111,6 @@ class SettingsPage extends ConsumerWidget {
                 style: ConstraintStyle.arrows,
                 label: 'Arrows',
                 description: 'Tip points to the smaller number',
-                hSymbols: '← →',
-                vSymbols: '↑ ↓',
                 colour: const Color(0xFFE8F5E9),
               ),
 
@@ -123,8 +120,6 @@ class SettingsPage extends ConsumerWidget {
                 style: ConstraintStyle.triangles,
                 label: 'Triangles',
                 description: 'Tip points to the smaller number',
-                hSymbols: '◁ ▷',
-                vSymbols: '△ ▽',
                 colour: const Color(0xFFFFF9C4),
               ),
 
@@ -258,16 +253,12 @@ class _ConstraintStyleCard extends ConsumerWidget {
     required this.style,
     required this.label,
     required this.description,
-    required this.hSymbols,
-    required this.vSymbols,
     required this.colour,
   });
 
   final ConstraintStyle style;
   final String label;
   final String description;
-  final String hSymbols;
-  final String vSymbols;
   final Color colour;
 
   @override
@@ -300,28 +291,29 @@ class _ConstraintStyleCard extends ConsumerWidget {
         child: Row(
           children: [
             // Symbol preview box
-            Container(
+            SizedBox(
               width: 52,
-              padding: const EdgeInsets.symmetric(vertical: 4),
               child: Column(
                 children: [
-                  Text(
-                    hSymbols,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: kConstraint,
+                  for (final pair in const [
+                    [PointDir.left, PointDir.right],
+                    [PointDir.up, PointDir.down],
+                  ])
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (final d in pair)
+                          Padding(
+                            padding: const EdgeInsets.all(3),
+                            child: ConstraintSymbol(
+                              dir: d,
+                              style: style,
+                              color: kConstraint,
+                              size: 18,
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    vSymbols,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: kConstraint,
-                    ),
-                  ),
                 ],
               ),
             ),

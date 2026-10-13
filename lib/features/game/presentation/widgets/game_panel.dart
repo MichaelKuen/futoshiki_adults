@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../domain/models/game_state.dart';
 import '../providers/game_provider.dart';
 import '../providers/settings_provider.dart';
+import 'constraint_symbol.dart';
 
 class GamePanel extends ConsumerWidget {
   const GamePanel({super.key});
@@ -391,20 +392,9 @@ class _HelpSection extends StatelessWidget {
   const _HelpSection({required this.constraintStyle});
   final ConstraintStyle constraintStyle;
 
-  String _hSym(bool isLessThan) => switch (constraintStyle) {
-        ConstraintStyle.classic => isLessThan ? '<' : '>',
-        ConstraintStyle.arrows => isLessThan ? '←' : '→',
-        ConstraintStyle.triangles => isLessThan ? '◁' : '▷',
-      };
-
-  String _vSym(bool isLessThan) => switch (constraintStyle) {
-        ConstraintStyle.classic => isLessThan ? '∧' : '∨',
-        ConstraintStyle.arrows => isLessThan ? '↑' : '↓',
-        ConstraintStyle.triangles => isLessThan ? '△' : '▽',
-      };
-
   String get _rule => switch (constraintStyle) {
-        ConstraintStyle.classic => 'The open side faces the bigger number.',
+        ConstraintStyle.classic =>
+          'The open side faces the bigger number; the tip points to the smaller.',
         ConstraintStyle.arrows => 'The tip always points to the smaller number.',
         ConstraintStyle.triangles =>
           'The tip always points to the smaller number.',
@@ -412,11 +402,6 @@ class _HelpSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gt = _hSym(false); // "4 [gt] 1" → 4 is bigger
-    final lt = _hSym(true);  // "1 [lt] 4" → 1 is smaller
-    final vGt = _vSym(false); // top bigger
-    final vLt = _vSym(true);  // top smaller
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -426,24 +411,26 @@ class _HelpSection extends StatelessWidget {
         _ExampleRow(
           label: 'Horizontal:',
           examples: [
-            _Example('5 $gt 2', '5 is bigger'),
-            _Example('1 $lt 4', '4 is bigger'),
+            _Example('5', PointDir.right, '2', '5 is bigger'),
+            _Example('1', PointDir.left, '4', '4 is bigger'),
           ],
+          style: constraintStyle,
         ),
         const SizedBox(height: 4),
         _ExampleRow(
-          label: 'Vertical:',
+          label: 'Vertical (between rows):',
           examples: [
-            _Example('$vGt between rows', 'top is bigger'),
-            _Example('$vLt between rows', 'bottom is bigger'),
+            _Example('', PointDir.down, '', 'top is bigger'),
+            _Example('', PointDir.up, '', 'bottom is bigger'),
           ],
+          style: constraintStyle,
         ),
         const SizedBox(height: 6),
-        Text(
+        const Text(
           '• Fill every row & column with numbers 1–N.\n'
           '• Each number appears exactly once per row and column.\n'
-          '• 💡 Hint reveals one correct cell.',
-          style: const TextStyle(fontSize: 11, height: 1.5),
+          '• Hint reveals one correct cell.',
+          style: TextStyle(fontSize: 11, height: 1.5),
         ),
       ],
     );
@@ -451,18 +438,30 @@ class _HelpSection extends StatelessWidget {
 }
 
 class _Example {
-  const _Example(this.symbol, this.meaning);
-  final String symbol;
+  const _Example(this.left, this.dir, this.right, this.meaning);
+  final String left;
+  final PointDir dir;
+  final String right;
   final String meaning;
 }
 
 class _ExampleRow extends StatelessWidget {
-  const _ExampleRow({required this.label, required this.examples});
+  const _ExampleRow({
+    required this.label,
+    required this.examples,
+    required this.style,
+  });
   final String label;
   final List<_Example> examples;
+  final ConstraintStyle style;
 
   @override
   Widget build(BuildContext context) {
+    final bold = TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.bold,
+      color: Colors.grey.shade800,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -475,23 +474,24 @@ class _ExampleRow extends StatelessWidget {
         for (final ex in examples)
           Padding(
             padding: const EdgeInsets.only(left: 8, bottom: 1),
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(fontSize: 12, color: Colors.black87),
-                children: [
-                  TextSpan(
-                    text: ex.symbol,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: kConstraint,
-                    ),
+            child: Row(
+              children: [
+                if (ex.left.isNotEmpty) Text('${ex.left} ', style: bold),
+                ConstraintSymbol(
+                  dir: ex.dir,
+                  style: style,
+                  color: kConstraint,
+                  size: 13,
+                ),
+                if (ex.right.isNotEmpty) Text(' ${ex.right}', style: bold),
+                Flexible(
+                  child: Text(
+                    '   ${ex.meaning}',
+                    style:
+                        TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
-                  TextSpan(
-                    text: '  →  ${ex.meaning}',
-                    style: TextStyle(color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
       ],
