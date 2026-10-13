@@ -61,9 +61,15 @@ class GameNotifier extends _$GameNotifier {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_paused || state.status != GameStatus.playing) return;
       state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
     });
   }
+
+  bool _paused = false;
+
+  /// Stops the clock while the app (or browser tab) is hidden.
+  void setPaused(bool paused) => _paused = paused;
 
   // ── Cell selection ────────────────────────────────────────────────────────
 

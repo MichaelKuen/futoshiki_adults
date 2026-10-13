@@ -121,6 +121,19 @@ void main() {
     expect(state().selectedRow, 0);
   });
 
+  test('timer stops while paused or after give up', () async {
+    notifier().setPaused(true);
+    await Future<void>.delayed(const Duration(milliseconds: 1100));
+    expect(state().elapsedSeconds, 0);
+    notifier().setPaused(false);
+    await Future<void>.delayed(const Duration(milliseconds: 1100));
+    expect(state().elapsedSeconds, greaterThan(0));
+    notifier().giveUp();
+    final frozen = state().elapsedSeconds;
+    await Future<void>.delayed(const Duration(milliseconds: 1100));
+    expect(state().elapsedSeconds, frozen);
+  });
+
   test('save then load restores the board', () async {
     notifier().selectCell(0, 0);
     notifier().inputDigit(1);

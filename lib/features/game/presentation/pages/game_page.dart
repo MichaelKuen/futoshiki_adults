@@ -18,16 +18,22 @@ class GamePage extends ConsumerStatefulWidget {
 
 class _GamePageState extends ConsumerState<GamePage> {
   late ConfettiController _confettiController;
+  late final AppLifecycleListener _lifecycle;
 
   @override
   void initState() {
     super.initState();
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
+    _lifecycle = AppLifecycleListener(
+      onHide: () => ref.read(gameNotifierProvider.notifier).setPaused(true),
+      onShow: () => ref.read(gameNotifierProvider.notifier).setPaused(false),
+    );
   }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     _confettiController.dispose();
     super.dispose();
   }
