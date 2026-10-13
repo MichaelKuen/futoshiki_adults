@@ -17,6 +17,13 @@ class SettingsNotifier extends _$SettingsNotifier {
     return 5;
   }
 
+  /// The stored grid size, for starting a game before this provider has
+  /// finished loading (web auto-start).
+  static Future<int> savedGridSize() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_gridSizeKey) ?? 5;
+  }
+
   Future<void> _loadGridSize() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getInt(_gridSizeKey) ?? 5;

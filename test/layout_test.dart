@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:futoshiki_adults/core/platform.dart';
 import 'package:futoshiki_adults/core/theme/app_theme.dart';
 import 'package:futoshiki_adults/features/game/data/repositories/puzzle_repository_impl.dart';
 import 'package:futoshiki_adults/features/game/domain/models/game_state.dart';
@@ -97,6 +98,26 @@ void expectFits(WidgetTester tester, Size size, {required double minBoard}) {
   }
 }
 
+/// Opens a dialog via [button] and checks it fits without scrolling.
+Future<void> expectDialogFits(WidgetTester tester, Finder button) async {
+  if (button.evaluate().isEmpty) return;
+  await tester.tap(button.first);
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+  expect(tester.takeException(), isNull);
+  expect(find.byType(Dialog), findsOneWidget);
+  expect(find.byType(Scrollable), findsNothing);
+  final screen = Offset.zero & tester.view.physicalSize;
+  final r = tester.getRect(find.byType(Dialog));
+  expect(
+      screen.contains(r.topLeft) &&
+          screen.contains(r.bottomRight - const Offset(0.01, 0.01)),
+      isTrue,
+      reason: 'dialog $r must be inside $screen');
+  Navigator.of(tester.element(find.byType(Dialog))).pop();
+  await tester.pump(const Duration(milliseconds: 400));
+}
+
 void main() {
   for (final size in sizes) {
     for (final v in Variant.values) {
@@ -110,4 +131,25 @@ void main() {
       });
     }
   }
+
+  group('web', () {
+    setUp(() => isWebEmbed = true);
+    tearDown(() => isWebEmbed = false);
+
+    for (final size in sizes) {
+      for (final v in Variant.values) {
+        testWidgets(
+            'web ${size.width.toInt()}x${size.height.toInt()} ${v.name}',
+            (tester) async {
+          final c = await pumpGame(tester, size, v);
+          expect(find.byType(AppBar), findsNothing);
+          final minBoard = size.shortestSide >= 600 ? 400.0 : 280.0;
+          expectFits(tester, size, minBoard: minBoard);
+          await expectDialogFits(tester, find.text('Options'));
+          await expectDialogFits(tester, find.text('New'));
+          await disposeGame(tester, c);
+        });
+      }
+    }
+  });
 }

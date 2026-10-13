@@ -9,12 +9,17 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glyph.dart';
 import '../../domain/models/game_state.dart';
 import '../providers/game_provider.dart';
+import '../providers/settings_provider.dart';
 import '../widgets/digit_pad.dart';
 import '../widgets/futoshiki_grid.dart';
 import '../widgets/game_panel.dart';
+import '../widgets/new_game_dialog.dart';
 
 class GamePage extends ConsumerStatefulWidget {
-  const GamePage({super.key});
+  const GamePage({super.key, this.autoStart = false});
+
+  /// Web opens straight into a game (there is no Home page).
+  final bool autoStart;
 
   @override
   ConsumerState<GamePage> createState() => _GamePageState();
@@ -33,6 +38,17 @@ class _GamePageState extends ConsumerState<GamePage> {
       onHide: () => ref.read(gameNotifierProvider.notifier).setPaused(true),
       onShow: () => ref.read(gameNotifierProvider.notifier).setPaused(false),
     );
+    if (widget.autoStart) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _autoStart());
+    }
+  }
+
+  Future<void> _autoStart() async {
+    final size = await SettingsNotifier.savedGridSize();
+    if (!mounted) return;
+    await ref
+        .read(gameNotifierProvider.notifier)
+        .startGame(size, Difficulty.medium);
   }
 
   @override
@@ -85,7 +101,11 @@ class _GamePageState extends ConsumerState<GamePage> {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.pop(context);
+                if (isWebEmbed) {
+                  showNewGameDialog(context);
+                } else {
+                  Navigator.pop(context);
+                }
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(200, 52),
@@ -93,11 +113,11 @@ class _GamePageState extends ConsumerState<GamePage> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const GlyphLabel(
-                'Play Again!',
+              child: GlyphLabel(
+                isWebEmbed ? 'New Game' : 'Play Again!',
                 '▶',
                 Icons.play_arrow,
-                style: TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 18),
               ),
             ).animate().fadeIn(delay: 800.ms),
           ),
@@ -129,14 +149,33 @@ class _GamePageState extends ConsumerState<GamePage> {
   @override
   Widget build(BuildContext context) {
     ref.listen<GameState>(gameNotifierProvider, (previous, next) {
-      if (previous?.status != GameStatus.won &&
-          next.status == GameStatus.won) {
+      if (previous?.status != GameStatus.won && next.status == GameStatus.won) {
         _confettiController.play();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _showWinDialog(next.elapsedSeconds);
         });
       }
     });
+
+    final body = Stack(
+      children: [
+        SafeArea(
+          child: LayoutBuilder(
+            builder: (context, c) => _GameLayout(
+              width: c.maxWidth,
+              height: c.maxHeight,
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.topCenter,
+          child: _buildConfetti(),
+        ),
+      ],
+    );
+
+    // The website shows the title, rules and links around the iframe.
+    if (isWebEmbed) return Scaffold(body: body);
 
     return Scaffold(
       appBar: AppBar(
@@ -160,22 +199,7 @@ class _GamePageState extends ConsumerState<GamePage> {
         width: 280,
         child: SafeArea(child: GamePanel()),
       ),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: LayoutBuilder(
-              builder: (context, c) => _GameLayout(
-                width: c.maxWidth,
-                height: c.maxHeight,
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: _buildConfetti(),
-          ),
-        ],
-      ),
+      body: body,
     );
   }
 }
@@ -211,7 +235,39 @@ class _GameLayout extends ConsumerWidget {
     final actionH = (height * 0.07).clamp(34.0, 52.0);
     final controlsH = padH + _gap + actionH;
 
-    Widget controls(double w) => SizedBox(
+    final notifier = ref.read(gameNotifierProvider.notifier);
+    final notesOn = state.placeMode == PlaceMode.pencilMarks;
+
+    /// Web has no app bar, so Notes, New Game and Options live in the
+    /// controls. [withOptions] is false when the side panel is inline.
+    List<Widget> webButtons({required bool withOptions}) => [
+          ActionButton(
+            label: 'Notes',
+            emoji: '✏️',
+            icon: Icons.edit_outlined,
+            height: actionH,
+            selected: notesOn,
+            onPressed: () => notifier.setPlaceMode(
+                notesOn ? PlaceMode.solution : PlaceMode.pencilMarks),
+          ),
+          ActionButton(
+            label: 'New',
+            emoji: '➕',
+            icon: Icons.add,
+            height: actionH,
+            onPressed: () => showNewGameDialog(context),
+          ),
+          if (withOptions)
+            ActionButton(
+              label: 'Options',
+              emoji: '⚙️',
+              icon: Icons.tune,
+              height: actionH,
+              onPressed: () => showGamePanelDialog(context),
+            ),
+        ];
+
+    Widget controls(double w, {required bool withOptions}) => SizedBox(
           width: w,
           height: controlsH,
           child: gaveUp
@@ -220,7 +276,12 @@ class _GameLayout extends ConsumerWidget {
                   children: [
                     DigitPad(height: padH),
                     const SizedBox(height: _gap),
-                    ActionRow(height: actionH),
+                    ActionRow(
+                      height: actionH,
+                      extra: isWebEmbed
+                          ? webButtons(withOptions: withOptions)
+                          : const [],
+                    ),
                   ],
                 ),
         );
@@ -236,7 +297,7 @@ class _GameLayout extends ConsumerWidget {
         children: [
           _StatsBar(state: state, height: statsH),
           Expanded(child: Center(child: FutoshikiGrid(size: board))),
-          controls(width - 2 * _pad),
+          controls(width - 2 * _pad, withOptions: true),
           const SizedBox(height: _pad),
         ],
       );
@@ -250,6 +311,7 @@ class _GameLayout extends ConsumerWidget {
     );
     final innerW = panelW - 2 * _pad;
     final panelSpace = height - 2 * _pad - controlsH - _gap;
+    final panelInline = panelSpace >= _minInlinePanelHeight;
 
     return Row(
       children: [
@@ -273,10 +335,10 @@ class _GameLayout extends ConsumerWidget {
           padding: const EdgeInsets.all(_pad),
           child: Column(
             children: [
-              controls(innerW),
+              controls(innerW, withOptions: false),
               const SizedBox(height: _gap),
               Expanded(
-                child: panelSpace >= _minInlinePanelHeight
+                child: panelInline
                     ? FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.topCenter,
@@ -405,8 +467,7 @@ class _StatsBar extends StatelessWidget {
               fit: BoxFit.scaleDown,
               child: Row(
                 children: [
-                  Text('Mistakes: ',
-                      style: TextStyle(fontSize: height * 0.36)),
+                  Text('Mistakes: ', style: TextStyle(fontSize: height * 0.36)),
                   Text('${state.mistakes}',
                       style: big.copyWith(color: kPrimary)),
                 ],
@@ -451,15 +512,18 @@ class _GaveUpBanner extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => isWebEmbed
+                  ? showNewGameDialog(context)
+                  : Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: kSolutionAccent,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              child: const GlyphLabel('Play Again', '▶', Icons.play_arrow,
-                  style: TextStyle(fontSize: 16)),
+              child: GlyphLabel(
+                  isWebEmbed ? 'New Game' : 'Play Again', '▶', Icons.play_arrow,
+                  style: const TextStyle(fontSize: 16)),
             ),
           ],
         ),

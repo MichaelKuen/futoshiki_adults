@@ -7,6 +7,7 @@ import '../../domain/models/game_state.dart';
 import '../providers/game_provider.dart';
 import '../providers/settings_provider.dart';
 import 'constraint_symbol.dart';
+import 'new_game_dialog.dart';
 
 class GamePanel extends ConsumerWidget {
   const GamePanel({super.key, this.scrollable = true});
@@ -119,23 +120,37 @@ class GamePanel extends ConsumerWidget {
             ),
             const SizedBox(width: 6),
             Expanded(
-              child: _PanelButton(
-                label: 'Save',
-                icon: Icons.save_outlined,
-                colour: isWebEmbed ? kSiteTeal : const Color(0xFF1976D2),
-                onPressed: (context, ref) async {
-                  await ref.read(gameNotifierProvider.notifier).saveGame();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Game saved!'),
-                        duration: Duration(seconds: 2),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                },
-              ),
+              child: isWebEmbed
+                  ? _PanelButton(
+                      label: 'New Game',
+                      icon: Icons.add,
+                      colour: kSiteTeal,
+                      onPressed: (context, ref) {
+                        final nav = Navigator.of(context);
+                        // Close the Options dialog first, if we're in one.
+                        if (nav.canPop()) nav.pop();
+                        showNewGameDialog(nav.context);
+                      },
+                    )
+                  : _PanelButton(
+                      label: 'Save',
+                      icon: Icons.save_outlined,
+                      colour: const Color(0xFF1976D2),
+                      onPressed: (context, ref) async {
+                        await ref
+                            .read(gameNotifierProvider.notifier)
+                            .saveGame();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Game saved!'),
+                              duration: Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                    ),
             ),
           ],
         ),

@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/platform.dart';
 import 'core/theme/app_theme.dart';
+import 'features/game/presentation/pages/game_page.dart';
 import 'features/home/presentation/pages/home_page.dart';
 
 void main() {
@@ -23,7 +25,8 @@ class FutoshikiApp extends StatelessWidget {
       title: 'Futoshiki for Adults',
       theme: appTheme(),
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      // Web: straight into a game inside the site's iframe.
+      home: isWebEmbed ? const GamePage(autoStart: true) : const HomePage(),
     );
   }
 }
