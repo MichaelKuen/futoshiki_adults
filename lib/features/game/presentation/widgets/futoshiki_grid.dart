@@ -11,22 +11,32 @@ import '../providers/settings_provider.dart';
 import 'constraint_symbol.dart';
 
 class FutoshikiGrid extends ConsumerWidget {
-  const FutoshikiGrid({super.key});
+  const FutoshikiGrid({super.key, required this.size});
 
-  static const double _constraintSlotW = 26.0;
-  static const double _constraintSlotH = 26.0;
+  /// Side length of the (square) board in logical pixels.
+  final double size;
+
+  /// Width of the gap holding an inequality symbol, relative to a cell.
+  static const double gapRatio = 0.42;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(gameNotifierProvider);
     final board = state.board;
-    if (board == null) return const SizedBox.shrink();
+    if (board == null) return SizedBox.square(dimension: size);
 
     final n = board.size;
     final showConstraintErrors = state.showBrokenInequalities;
     final constraintStyle = ref.watch(constraintStyleNotifierProvider);
+    final engine = FutoshikiEngine();
+
+    // n cells + (n - 1) gaps fill the board exactly.
+    final cellSize = size / (n + gapRatio * (n - 1));
+    final gap = cellSize * gapRatio;
 
     return Container(
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
@@ -39,62 +49,52 @@ class FutoshikiGrid extends ConsumerWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final totalSlotWidth = (n - 1) * _constraintSlotW;
-            final cellSize = (constraints.maxWidth - totalSlotWidth) / n;
-
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int r = 0; r < n; r++) ...[
-                  Row(
-                    children: [
-                      for (int c = 0; c < n; c++) ...[
-                        _CellWidget(
-                          cell: board.cells[r][c],
-                          size: cellSize,
-                          boardSize: n,
-                          onTap: () => ref
-                              .read(gameNotifierProvider.notifier)
-                              .selectCell(r, c),
-                        ),
-                        if (c < n - 1)
-                          _ConstraintSlot(
-                            width: _constraintSlotW,
-                            height: cellSize,
-                            constraint:
-                                FutoshikiEngine().hConstraint(board, r, c),
-                            firstValue: board.cells[r][c].value,
-                            secondValue: board.cells[r][c + 1].value,
-                            showErrors: showConstraintErrors,
-                            style: constraintStyle,
-                          ),
-                      ],
-                    ],
-                  ),
-                  if (r < n - 1)
-                    Row(
-                      children: [
-                        for (int c = 0; c < n; c++) ...[
-                          _ConstraintSlot(
-                            width: cellSize,
-                            height: _constraintSlotH,
-                            constraint:
-                                FutoshikiEngine().vConstraint(board, r, c),
-                            firstValue: board.cells[r][c].value,
-                            secondValue: board.cells[r + 1][c].value,
-                            showErrors: showConstraintErrors,
-                            style: constraintStyle,
-                          ),
-                          if (c < n - 1) SizedBox(width: _constraintSlotW),
-                        ],
-                      ],
+        child: Column(
+          children: [
+            for (int r = 0; r < n; r++) ...[
+              Row(
+                children: [
+                  for (int c = 0; c < n; c++) ...[
+                    _CellWidget(
+                      cell: board.cells[r][c],
+                      size: cellSize,
+                      boardSize: n,
+                      onTap: () => ref
+                          .read(gameNotifierProvider.notifier)
+                          .selectCell(r, c),
                     ),
+                    if (c < n - 1)
+                      _ConstraintSlot(
+                        width: gap,
+                        height: cellSize,
+                        constraint: engine.hConstraint(board, r, c),
+                        firstValue: board.cells[r][c].value,
+                        secondValue: board.cells[r][c + 1].value,
+                        showErrors: showConstraintErrors,
+                        style: constraintStyle,
+                      ),
+                  ],
                 ],
-              ],
-            );
-          },
+              ),
+              if (r < n - 1)
+                Row(
+                  children: [
+                    for (int c = 0; c < n; c++) ...[
+                      _ConstraintSlot(
+                        width: cellSize,
+                        height: gap,
+                        constraint: engine.vConstraint(board, r, c),
+                        firstValue: board.cells[r][c].value,
+                        secondValue: board.cells[r + 1][c].value,
+                        showErrors: showConstraintErrors,
+                        style: constraintStyle,
+                      ),
+                      if (c < n - 1) SizedBox(width: gap),
+                    ],
+                  ],
+                ),
+            ],
+          ],
         ),
       ),
     );
@@ -148,7 +148,7 @@ class _CellWidget extends StatelessWidget {
         child: Text(
           '${cell.value}',
           style: TextStyle(
-            fontSize: size * 0.44,
+            fontSize: size * 0.5,
             fontWeight: FontWeight.bold,
             color: textColor,
           ),
@@ -216,26 +216,37 @@ class _PencilMarkGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-      ),
-      itemCount: n,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (_, i) {
-        final d = i + 1;
-        return Center(
-          child: Text(
-            marks.contains(d) ? '$d' : '',
-            style: TextStyle(
-              fontSize: size * 0.17,
-              fontWeight: FontWeight.w600,
-              color: Colors.blueGrey.shade500,
+    // 3 columns; plain rows (not a GridView) so nothing in the board is a
+    // scrollable.
+    final style = TextStyle(
+      fontSize: size * 0.2,
+      height: 1,
+      fontWeight: FontWeight.w600,
+      color: Colors.blueGrey.shade600,
+    );
+    final rows = (n + 2) ~/ 3;
+    return Padding(
+      padding: EdgeInsets.all(size * 0.06),
+      child: Column(
+        children: [
+          for (int r = 0; r < rows; r++)
+            Expanded(
+              child: Row(
+                children: [
+                  for (int c = 0; c < 3; c++)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          marks.contains(r * 3 + c + 1) ? '${r * 3 + c + 1}' : '',
+                          style: style,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
