@@ -1,17 +1,34 @@
-# futoshiki_for_kids
+# Futoshiki for Adults
 
-A new Flutter project.
+A Futoshiki (inequality) logic puzzle for Android, iOS and the web.
+Fill every row and column with 1–N exactly once so that every inequality sign
+between neighbouring cells holds. 5×5 to 7×7 grids, five levels from Easy to
+Insane, notes, hints, mistake counter and timer. Every puzzle has exactly one
+solution.
 
-## Getting Started
+## Platforms
 
-This project is a starting point for a Flutter application.
+- **Android / iOS:** Home page with level choice, Settings (grid size,
+  symbol style), manual Save / Continue.
+- **Web (appversegames.com iframe):** opens straight into a game. No app bar,
+  Home or Settings (the site shows title, rules and links); New Game dialog for
+  level / size / symbols; auto-saves to the browser and resumes; keyboard play.
+  Web-only behaviour is gated by `isWebEmbed` (`lib/core/platform.dart`).
 
-A few resources to get you started if this is your first Flutter project:
+## Develop
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```sh
+flutter pub get
+flutter analyze
+flutter test
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Web build and upload
+
+```sh
+flutter build web --release --base-href /play/futoshiki_adults/ --no-web-resources-cdn
+```
+
+Upload the **contents** of `build/web` (including `.htaccess`) to
+`public_html/play/futoshiki_adults/`, and set the WordPress iframe `src` to
+`/play/futoshiki_adults/`.
