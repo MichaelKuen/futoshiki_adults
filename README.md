@@ -26,9 +26,9 @@ flutter test
 ## Web build and upload
 
 ```sh
-flutter build web --release --base-href /play/futoshiki_adults/ --no-web-resources-cdn
+flutter build web --release --base-href /play/futoshiki/ --no-web-resources-cdn
 ```
 
 Upload the **contents** of `build/web` (including `.htaccess`) to
-`public_html/play/futoshiki_adults/`, and set the WordPress iframe `src` to
-`/play/futoshiki_adults/`.
+`public_html/play/futoshiki/`, and set the WordPress iframe `src` to
+`/play/futoshiki/`.

@@ -1,4 +1,4 @@
-# Futoshiki for Adults — served from public_html/play/futoshiki_adults/
+# Futoshiki for Adults — served from public_html/play/futoshiki/
 
 # ── MIME types ──────────────────────────────────────────────────────────────
 <IfModule mod_mime.c>
