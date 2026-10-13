@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/glyph.dart';
 import '../../domain/models/board.dart';
 import '../providers/game_provider.dart';
 
@@ -133,7 +134,8 @@ class ActionRow extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              child: const Text('💡 Hint'),
+              child: const GlyphLabel('Hint', '💡', Icons.lightbulb_outline,
+                  leading: true),
             ),
           ),
         ),
@@ -154,7 +156,8 @@ class ActionRow extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              child: const Text('🧹 Erase'),
+              child: const GlyphLabel('Erase', '🧹', Icons.backspace_outlined,
+                  leading: true),
             ),
           ),
         ),

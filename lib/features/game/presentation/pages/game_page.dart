@@ -2,7 +2,9 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/platform.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/glyph.dart';
 import '../../domain/models/game_state.dart';
 import '../providers/game_provider.dart';
 import '../widgets/digit_pad.dart';
@@ -50,16 +52,18 @@ class _GamePageState extends ConsumerState<GamePage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🏆', style: TextStyle(fontSize: 80))
+            Glyph('🏆', Icons.emoji_events, size: 80, color: kSecondary)
                 .animate()
                 .scale(duration: 700.ms, curve: Curves.elasticOut),
             const SizedBox(height: 16),
-            Text(
-              'Brilliant Work! 🎉',
+            GlyphLabel(
+              'Brilliant Work!',
+              '🎉',
+              Icons.celebration_outlined,
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: Colors.green.shade700,
+                color: isWebEmbed ? kSiteTeal : Colors.green.shade700,
               ),
             ).animate().fadeIn(delay: 300.ms),
             const SizedBox(height: 8),
@@ -87,8 +91,10 @@ class _GamePageState extends ConsumerState<GamePage> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text(
-                'Play Again! ▶',
+              child: const GlyphLabel(
+                'Play Again!',
+                '▶',
+                Icons.play_arrow,
                 style: TextStyle(fontSize: 18),
               ),
             ).animate().fadeIn(delay: 800.ms),
@@ -331,8 +337,11 @@ class _GaveUpBanner extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            '💡 Solution revealed',
+          const GlyphLabel(
+            'Solution revealed',
+            '💡',
+            Icons.lightbulb_outline,
+            leading: true,
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
@@ -353,7 +362,7 @@ class _GaveUpBanner extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Play Again ▶',
+              child: const GlyphLabel('Play Again', '▶', Icons.play_arrow,
                   style: TextStyle(fontSize: 16)),
             ),
           ),

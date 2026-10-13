@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/platform.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/glyph.dart';
 import '../../domain/models/game_state.dart';
 import '../providers/game_provider.dart';
 import '../providers/settings_provider.dart';
@@ -88,14 +89,25 @@ class GamePanel extends ConsumerWidget {
                         builder: (_) => AlertDialog(
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16)),
-                          content: Text(
-                            board.isComplete
-                                ? '🎉 All correct!'
+                          content: Center(
+                            heightFactor: 1,
+                            child: board.isComplete
+                                ? const GlyphLabel('All correct!', '🎉',
+                                    Icons.celebration_outlined,
+                                    leading: true,
+                                    style: TextStyle(fontSize: 16))
                                 : errorCount == 0
-                                    ? '✅ No mistakes yet!'
-                                    : '❌ $errorCount cell${errorCount == 1 ? '' : 's'} to fix.',
-                            style: const TextStyle(fontSize: 16),
-                            textAlign: TextAlign.center,
+                                    ? const GlyphLabel(
+                                        'No mistakes yet!', '✅',
+                                        Icons.check_circle_outline,
+                                        leading: true,
+                                        style: TextStyle(fontSize: 16))
+                                    : GlyphLabel(
+                                        '$errorCount cell${errorCount == 1 ? '' : 's'} to fix.',
+                                        '❌',
+                                        Icons.cancel_outlined,
+                                        leading: true,
+                                        style: const TextStyle(fontSize: 16)),
                           ),
                           actions: [
                             TextButton(
