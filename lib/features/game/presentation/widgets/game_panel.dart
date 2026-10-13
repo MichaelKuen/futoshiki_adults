@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/platform.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/models/game_state.dart';
 import '../providers/game_provider.dart';
@@ -73,7 +74,7 @@ class GamePanel extends ConsumerWidget {
                   child: _PanelButton(
                     label: 'Check',
                     icon: Icons.check_circle_outline,
-                    colour: const Color(0xFF4CAF50),
+                    colour: isWebEmbed ? kSiteTeal : const Color(0xFF4CAF50),
                     onPressed: (context, ref) {
                       ref.read(gameNotifierProvider.notifier).checkSolution();
                       final board = ref.read(gameNotifierProvider).board;
@@ -112,7 +113,7 @@ class GamePanel extends ConsumerWidget {
                   child: _PanelButton(
                     label: 'Save',
                     icon: Icons.save_outlined,
-                    colour: const Color(0xFF1976D2),
+                    colour: isWebEmbed ? kSiteTeal : const Color(0xFF1976D2),
                     onPressed: (context, ref) async {
                       await ref.read(gameNotifierProvider.notifier).saveGame();
                       if (context.mounted) {
@@ -136,7 +137,7 @@ class GamePanel extends ConsumerWidget {
                   child: _PanelButton(
                     label: 'Reset',
                     icon: Icons.refresh,
-                    colour: const Color(0xFFF57C00),
+                    colour: isWebEmbed ? kSiteNavy : const Color(0xFFF57C00),
                     onPressed: (context, ref) {
                       showDialog<void>(
                         context: context,
@@ -154,7 +155,8 @@ class GamePanel extends ConsumerWidget {
                             ),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFF57C00),
+                                backgroundColor:
+                                    isWebEmbed ? kSiteNavy : const Color(0xFFF57C00),
                                 foregroundColor: Colors.white,
                               ),
                               onPressed: () {
@@ -176,7 +178,7 @@ class GamePanel extends ConsumerWidget {
                   child: _PanelButton(
                     label: 'Show Solution',
                     icon: Icons.lightbulb_outline,
-                    colour: const Color(0xFF9C27B0),
+                    colour: kSolutionAccent,
                     onPressed: (context, ref) {
                       showDialog<void>(
                         context: context,
@@ -195,7 +197,7 @@ class GamePanel extends ConsumerWidget {
                             ),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF9C27B0),
+                                backgroundColor: kSolutionAccent,
                                 foregroundColor: Colors.white,
                               ),
                               onPressed: () {
@@ -239,7 +241,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.bold,
         color: kPrimary,

@@ -63,7 +63,7 @@ class _DigitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final complete = _isComplete();
-    final colour = kDigitPadColours[digit]!;
+    final colour = digitPadColour(digit);
 
     Widget button = SizedBox(
       height: 60,
@@ -72,8 +72,8 @@ class _DigitButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: colour,
           disabledBackgroundColor: colour,
-          foregroundColor: Colors.black87,
-          disabledForegroundColor: Colors.black87,
+          foregroundColor: kDigitPadText,
+          disabledForegroundColor: kDigitPadText,
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(13),
@@ -81,10 +81,10 @@ class _DigitButton extends StatelessWidget {
         ),
         child: Text(
           '$digit',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: kDigitPadText,
           ),
         ),
       ),
@@ -123,7 +123,7 @@ class ActionRow extends ConsumerWidget {
               onPressed: () =>
                   ref.read(gameNotifierProvider.notifier).useHint(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD700),
+                backgroundColor: kHintButton,
                 foregroundColor: Colors.black87,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),

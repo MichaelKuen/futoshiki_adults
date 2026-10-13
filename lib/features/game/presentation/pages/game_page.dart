@@ -324,9 +324,9 @@ class _GaveUpBanner extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3E5F5),
+        color: kSolutionBanner,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF9C27B0), width: 1.5),
+        border: Border.all(color: kSolutionAccent, width: 1.5),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -348,7 +348,7 @@ class _GaveUpBanner extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9C27B0),
+                backgroundColor: kSolutionAccent,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),

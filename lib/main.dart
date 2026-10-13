@@ -21,7 +21,7 @@ class FutoshikiApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Futoshiki for Adults',
-      theme: adultsTheme,
+      theme: appTheme(),
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );

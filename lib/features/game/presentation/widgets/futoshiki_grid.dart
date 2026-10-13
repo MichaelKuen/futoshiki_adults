@@ -120,11 +120,11 @@ class _CellWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     Color bgColor;
     if (cell.isSelected) {
-      bgColor = kPrimary.withValues(alpha: 0.40);
+      bgColor = kSelectedCell;
     } else if (cell.isSameDigit) {
-      bgColor = kSecondary.withValues(alpha: 0.35);
+      bgColor = kSameDigitCell;
     } else if (cell.isHighlighted) {
-      bgColor = kPrimary.withValues(alpha: 0.12);
+      bgColor = kHighlightCell;
     } else {
       bgColor = Colors.white;
     }
@@ -136,7 +136,7 @@ class _CellWidget extends StatelessWidget {
       } else if (cell.isFixed) {
         textColor = kCellFixed;
       } else if (cell.isRevealed) {
-        textColor = const Color(0xFF7B1FA2);
+        textColor = kRevealed;
       } else {
         textColor = kPrimary;
       }
