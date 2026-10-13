@@ -102,7 +102,7 @@ class SettingsPage extends ConsumerWidget {
                 label: 'Classic',
                 description: 'Traditional maths symbols',
                 hSymbols: '< >',
-                vSymbols: '∨ ∧',
+                vSymbols: '∧ ∨',
                 colour: const Color(0xFFE3F2FD),
               ),
 

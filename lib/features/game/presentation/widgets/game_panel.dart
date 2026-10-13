@@ -398,7 +398,7 @@ class _HelpSection extends StatelessWidget {
       };
 
   String _vSym(bool isLessThan) => switch (constraintStyle) {
-        ConstraintStyle.classic => isLessThan ? '∨' : '∧',
+        ConstraintStyle.classic => isLessThan ? '∧' : '∨',
         ConstraintStyle.arrows => isLessThan ? '↑' : '↓',
         ConstraintStyle.triangles => isLessThan ? '△' : '▽',
       };

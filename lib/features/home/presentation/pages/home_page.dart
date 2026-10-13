@@ -119,7 +119,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     _RuleLine('Each row uses every number exactly once'),
                     _RuleLine('Each column uses every number exactly once'),
                     const _RuleLine('< means the LEFT box has a SMALLER number'),
-                    const _RuleLine('∨ means the TOP box has a SMALLER number'),
+                    const _RuleLine('∧ means the TOP box has a SMALLER number'),
                   ],
                 ),
               ),

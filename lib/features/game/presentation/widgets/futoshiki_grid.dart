@@ -319,7 +319,7 @@ class _VConstraintWidget extends StatelessWidget {
   final ConstraintStyle style;
 
   String _symbol(bool isLessThan) => switch (style) {
-        ConstraintStyle.classic => isLessThan ? '∨' : '∧',
+        ConstraintStyle.classic => isLessThan ? '∧' : '∨',
         // tip points toward the smaller cell
         ConstraintStyle.arrows => isLessThan ? '↑' : '↓',
         ConstraintStyle.triangles => isLessThan ? '△' : '▽',
