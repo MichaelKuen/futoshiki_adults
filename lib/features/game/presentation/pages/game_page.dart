@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:confetti/confetti.dart';
@@ -36,7 +37,10 @@ class _GamePageState extends ConsumerState<GamePage> {
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
     _lifecycle = AppLifecycleListener(
-      onHide: () => ref.read(gameNotifierProvider.notifier).setPaused(true),
+      onHide: () {
+        ref.read(gameNotifierProvider.notifier).setPaused(true);
+        if (isWebEmbed) _autoSaveNow();
+      },
       onShow: () => ref.read(gameNotifierProvider.notifier).setPaused(false),
     );
     if (widget.autoStart) {
@@ -120,16 +124,37 @@ class _GamePageState extends ConsumerState<GamePage> {
   }
 
   Future<void> _autoStart() async {
+    final notifier = ref.read(gameNotifierProvider.notifier);
+    // Web resumes the auto-saved game, if any.
+    if (await notifier.loadSavedGame()) return;
     final size = await SettingsNotifier.savedGridSize();
     if (!mounted) return;
-    await ref
-        .read(gameNotifierProvider.notifier)
-        .startGame(size, Difficulty.medium);
+    await notifier.startGame(size, Difficulty.medium);
+  }
+
+  // ── Web auto-save (browser localStorage via shared_preferences) ──────────
+
+  Timer? _autoSaveTimer;
+
+  /// Saves at most every couple of seconds (the clock changes the state
+  /// every second, so a debounce would never fire).
+  void _scheduleAutoSave() {
+    _autoSaveTimer ??= Timer(const Duration(seconds: 2), _autoSaveNow);
+  }
+
+  void _autoSaveNow() {
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = null;
+    final state = ref.read(gameNotifierProvider);
+    if (state.status == GameStatus.playing && state.board != null) {
+      unawaited(ref.read(gameNotifierProvider.notifier).saveGame());
+    }
   }
 
   @override
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_onKey);
+    _autoSaveTimer?.cancel();
     _lifecycle.dispose();
     _confettiController.dispose();
     super.dispose();
@@ -231,6 +256,15 @@ class _GamePageState extends ConsumerState<GamePage> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _showWinDialog(next.elapsedSeconds);
         });
+      }
+      if (isWebEmbed) {
+        if (next.status == GameStatus.playing) {
+          _scheduleAutoSave();
+        } else if (next.status == GameStatus.gaveUp &&
+            previous?.status != GameStatus.gaveUp) {
+          // A revealed puzzle shouldn't come back on the next visit.
+          unawaited(ref.read(gameNotifierProvider.notifier).clearSavedGame());
+        }
       }
     });
 

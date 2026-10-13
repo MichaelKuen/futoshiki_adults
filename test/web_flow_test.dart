@@ -131,6 +131,23 @@ void main() {
     await finish(tester, c);
   });
 
+  testWidgets('auto-saves and resumes on the next visit', (tester) async {
+    var c = await pumpApp(tester);
+    final n = c.read(gameNotifierProvider.notifier);
+    n.selectCell(0, 0);
+    n.inputDigit(1);
+    await tester.pump(const Duration(seconds: 3));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await finish(tester, c);
+
+    // A new page load (fresh providers, same browser storage).
+    c = await pumpApp(tester);
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump();
+    expect(c.read(gameNotifierProvider).board!.cells[0][0].value, 1);
+    await finish(tester, c);
+  });
+
   testWidgets('Notes button toggles pencil-mark mode', (tester) async {
     final c = await pumpApp(tester);
     await tester.tap(find.text('Notes'));
