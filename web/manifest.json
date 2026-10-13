@@ -1,12 +1,12 @@
 {
-    "name": "futoshiki_adults",
-    "short_name": "futoshiki_adults",
+    "name": "Futoshiki for Adults",
+    "short_name": "Futoshiki",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
+    "background_color": "#F6F3EC",
+    "theme_color": "#F6F3EC",
     "description": "A challenging Futoshiki inequality puzzle game for adults.",
-    "orientation": "portrait-primary",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {
