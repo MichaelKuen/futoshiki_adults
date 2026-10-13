@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:futoshiki_adults/core/platform.dart';
@@ -91,6 +92,42 @@ void main() {
     await startFromDialog(tester);
     expect(find.byType(FutoshikiGrid), findsOneWidget);
     expect(c.read(gameNotifierProvider).status, GameStatus.playing);
+    await finish(tester, c);
+  });
+
+  testWidgets('keyboard: arrows, digits, numpad, erase; works after a click',
+      (tester) async {
+    final c = await pumpApp(tester);
+    int value(int r, int col) =>
+        c.read(gameNotifierProvider).board!.cells[r][col].value;
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    expect(c.read(gameNotifierProvider).selectedRow, 0);
+    expect(c.read(gameNotifierProvider).selectedCol, 0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+    expect(value(0, 0), 1);
+    await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+    expect(value(0, 0), 0);
+
+    // Click a button, then keys must still reach the game.
+    await tester.tap(find.text('Notes'));
+    await tester.pump();
+    await tester.tap(find.text('Notes'));
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.numpad1);
+    expect(value(0, 0), 1);
+
+    // Digits above the grid size are ignored.
+    await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
+    expect(value(0, 0), 0);
+
+    // Keys are ignored while a dialog is open.
+    await tester.tap(find.text('New'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+    expect(value(0, 0), 0);
     await finish(tester, c);
   });
 

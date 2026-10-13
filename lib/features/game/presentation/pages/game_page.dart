@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/platform.dart';
@@ -41,6 +42,81 @@ class _GamePageState extends ConsumerState<GamePage> {
     if (widget.autoStart) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _autoStart());
     }
+    // Global handler, not a focus-based KeyboardListener, so keys keep
+    // working after the player clicks a button.
+    HardwareKeyboard.instance.addHandler(_onKey);
+  }
+
+  static final _digitKeys = <LogicalKeyboardKey, int>{
+    LogicalKeyboardKey.digit1: 1,
+    LogicalKeyboardKey.digit2: 2,
+    LogicalKeyboardKey.digit3: 3,
+    LogicalKeyboardKey.digit4: 4,
+    LogicalKeyboardKey.digit5: 5,
+    LogicalKeyboardKey.digit6: 6,
+    LogicalKeyboardKey.digit7: 7,
+    LogicalKeyboardKey.numpad1: 1,
+    LogicalKeyboardKey.numpad2: 2,
+    LogicalKeyboardKey.numpad3: 3,
+    LogicalKeyboardKey.numpad4: 4,
+    LogicalKeyboardKey.numpad5: 5,
+    LogicalKeyboardKey.numpad6: 6,
+    LogicalKeyboardKey.numpad7: 7,
+  };
+
+  static final _eraseKeys = {
+    LogicalKeyboardKey.backspace,
+    LogicalKeyboardKey.delete,
+    LogicalKeyboardKey.digit0,
+    LogicalKeyboardKey.numpad0,
+  };
+
+  static final _arrows = <LogicalKeyboardKey, (int, int)>{
+    LogicalKeyboardKey.arrowUp: (-1, 0),
+    LogicalKeyboardKey.arrowDown: (1, 0),
+    LogicalKeyboardKey.arrowLeft: (0, -1),
+    LogicalKeyboardKey.arrowRight: (0, 1),
+  };
+
+  /// Returns true for keys the game handled.
+  bool _onKey(KeyEvent event) {
+    if (event is KeyUpEvent || !mounted) return false;
+    // Ignore keys while a dialog (New Game, Options, win...) is open.
+    if (ModalRoute.of(context)?.isCurrent != true) return false;
+    final state = ref.read(gameNotifierProvider);
+    final board = state.board;
+    if (board == null || state.status != GameStatus.playing) return false;
+    final n = ref.read(gameNotifierProvider.notifier);
+    final key = event.logicalKey;
+
+    final move = _arrows[key];
+    if (move != null) {
+      n.moveSelection(move.$1, move.$2);
+      return true;
+    }
+    if (event is KeyRepeatEvent) return false;
+
+    final digit = _digitKeys[key];
+    if (digit != null) {
+      if (digit > board.size) return false;
+      n.inputDigit(digit);
+      return true;
+    }
+    if (_eraseKeys.contains(key)) {
+      n.eraseCell();
+      return true;
+    }
+    if (key == LogicalKeyboardKey.keyN) {
+      n.setPlaceMode(state.placeMode == PlaceMode.pencilMarks
+          ? PlaceMode.solution
+          : PlaceMode.pencilMarks);
+      return true;
+    }
+    if (key == LogicalKeyboardKey.keyH) {
+      n.useHint();
+      return true;
+    }
+    return false;
   }
 
   Future<void> _autoStart() async {
@@ -53,6 +129,7 @@ class _GamePageState extends ConsumerState<GamePage> {
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKey);
     _lifecycle.dispose();
     _confettiController.dispose();
     super.dispose();

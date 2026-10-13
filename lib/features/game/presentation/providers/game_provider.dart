@@ -82,6 +82,45 @@ class GameNotifier extends _$GameNotifier {
     _highlightCells(row, col);
   }
 
+  /// Keyboard navigation: moves the selection one step, skipping cells the
+  /// player can't fill. With nothing selected, picks the first empty cell.
+  void moveSelection(int dRow, int dCol) {
+    if (state.status != GameStatus.playing) return;
+    final board = state.board;
+    if (board == null) return;
+    final n = board.size;
+    bool open(int r, int c) =>
+        !board.cells[r][c].isFixed && !board.cells[r][c].isRevealed;
+
+    final row = state.selectedRow;
+    final col = state.selectedCol;
+    if (row == null || col == null) {
+      for (final pass in [true, false]) {
+        for (int r = 0; r < n; r++) {
+          for (int c = 0; c < n; c++) {
+            // First pass: an empty cell; second: any open cell.
+            if (open(r, c) && (!pass || board.cells[r][c].value == 0)) {
+              selectCell(r, c);
+              return;
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    var r = row + dRow;
+    var c = col + dCol;
+    while (r >= 0 && r < n && c >= 0 && c < n) {
+      if (open(r, c)) {
+        selectCell(r, c);
+        return;
+      }
+      r += dRow;
+      c += dCol;
+    }
+  }
+
   void _highlightCells(int row, int col) {
     final board = state.board;
     if (board == null) return;
@@ -127,7 +166,8 @@ class GameNotifier extends _$GameNotifier {
     var newCells = _replaceCell(board.cells, row, col, updatedCell);
 
     if (state.autoRemovePencilMarks) {
-      newCells = _clearPencilMarkInRowCol(newCells, row, col, digit, board.size);
+      newCells =
+          _clearPencilMarkInRowCol(newCells, row, col, digit, board.size);
     }
 
     final updatedBoard = board.copyWith(cells: newCells);
@@ -181,15 +221,17 @@ class GameNotifier extends _$GameNotifier {
     int digit,
     int n,
   ) {
-    return List.generate(n, (r) => List.generate(n, (c) {
-      if (r == row && c == col) return cells[r][c];
-      if (r != row && c != col) return cells[r][c];
-      final cell = cells[r][c];
-      if (!cell.pencilMarks.contains(digit)) return cell;
-      return cell.copyWith(
-        pencilMarks: cell.pencilMarks.where((d) => d != digit).toList(),
-      );
-    }));
+    return List.generate(
+        n,
+        (r) => List.generate(n, (c) {
+              if (r == row && c == col) return cells[r][c];
+              if (r != row && c != col) return cells[r][c];
+              final cell = cells[r][c];
+              if (!cell.pencilMarks.contains(digit)) return cell;
+              return cell.copyWith(
+                pencilMarks: cell.pencilMarks.where((d) => d != digit).toList(),
+              );
+            }));
   }
 
   // ── Error application ─────────────────────────────────────────────────────
@@ -291,8 +333,7 @@ class GameNotifier extends _$GameNotifier {
 
   // ── Panel settings toggles ────────────────────────────────────────────────
 
-  void setPlaceMode(PlaceMode mode) =>
-      state = state.copyWith(placeMode: mode);
+  void setPlaceMode(PlaceMode mode) => state = state.copyWith(placeMode: mode);
 
   void toggleShowRepeatedDigits() =>
       state = state.copyWith(showRepeatedDigits: !state.showRepeatedDigits);
@@ -336,21 +377,23 @@ class GameNotifier extends _$GameNotifier {
     if (board == null) return;
     _timer?.cancel();
 
-    final revealedCells = List.generate(board.size, (r) => List.generate(
-      board.size,
-      (c) {
-        final cell = board.cells[r][c];
-        if (cell.isFixed || cell.isRevealed) return cell;
-        final correct = board.getSolution(r, c);
-        if (cell.value == correct && !cell.isError) return cell;
-        return cell.copyWith(
-          value: correct,
-          isRevealed: true,
-          isError: false,
-          pencilMarks: const <int>[],
-        );
-      },
-    ));
+    final revealedCells = List.generate(
+        board.size,
+        (r) => List.generate(
+              board.size,
+              (c) {
+                final cell = board.cells[r][c];
+                if (cell.isFixed || cell.isRevealed) return cell;
+                final correct = board.getSolution(r, c);
+                if (cell.value == correct && !cell.isError) return cell;
+                return cell.copyWith(
+                  value: correct,
+                  isRevealed: true,
+                  isError: false,
+                  pencilMarks: const <int>[],
+                );
+              },
+            ));
 
     state = state.copyWith(
       board: board.copyWith(cells: revealedCells),
@@ -425,11 +468,9 @@ class GameNotifier extends _$GameNotifier {
     if (raw == null) return false;
 
     try {
-      final Map<String, dynamic> save =
-          jsonDecode(raw) as Map<String, dynamic>;
+      final Map<String, dynamic> save = jsonDecode(raw) as Map<String, dynamic>;
       final n = save['gridSize'] as int;
-      final difficulty =
-          Difficulty.values.byName(save['difficulty'] as String);
+      final difficulty = Difficulty.values.byName(save['difficulty'] as String);
 
       final solution = (save['solution'] as List)
           .map((row) => (row as List).map((v) => v as int).toList())
@@ -445,19 +486,20 @@ class GameNotifier extends _$GameNotifier {
               ))
           .toList();
 
-      List<List<FutoshikiCell>> buildCells(List<dynamic> raw) =>
-          List.generate(n, (r) => List.generate(n, (c) {
-            final d = raw[r][c] as Map<String, dynamic>;
-            return FutoshikiCell(
-              row: r,
-              col: c,
-              value: d['v'] as int,
-              isFixed: d['f'] as bool,
-              isRevealed: (d['r'] as bool?) ?? false,
-              pencilMarks:
-                  ((d['pm'] as List?)?.map((e) => e as int).toList()) ?? [],
-            );
-          }));
+      List<List<FutoshikiCell>> buildCells(List<dynamic> raw) => List.generate(
+          n,
+          (r) => List.generate(n, (c) {
+                final d = raw[r][c] as Map<String, dynamic>;
+                return FutoshikiCell(
+                  row: r,
+                  col: c,
+                  value: d['v'] as int,
+                  isFixed: d['f'] as bool,
+                  isRevealed: (d['r'] as bool?) ?? false,
+                  pencilMarks:
+                      ((d['pm'] as List?)?.map((e) => e as int).toList()) ?? [],
+                );
+              }));
 
       final cells = buildCells(save['cells'] as List<dynamic>);
       final initCells = buildCells(save['initialCells'] as List<dynamic>);
@@ -510,8 +552,7 @@ class GameNotifier extends _$GameNotifier {
     return List.generate(
       cells.length,
       (r) => r == row
-          ? List.generate(
-              cells[r].length, (c) => c == col ? cell : cells[r][c])
+          ? List.generate(cells[r].length, (c) => c == col ? cell : cells[r][c])
           : cells[r],
     );
   }

@@ -138,6 +138,22 @@ void main() {
     expect(state().elapsedSeconds, frozen);
   });
 
+  test('arrow navigation selects the first empty cell, then skips givens', () {
+    notifier().moveSelection(0, 1);
+    expect((state().selectedRow, state().selectedCol), (0, 0));
+    notifier().moveSelection(0, 1);
+    expect((state().selectedRow, state().selectedCol), (0, 1));
+    // Right of (0,1) is all givens → stays.
+    notifier().moveSelection(0, 1);
+    expect((state().selectedRow, state().selectedCol), (0, 1));
+    // Down from (0,1): (1,1) is open.
+    notifier().moveSelection(1, 0);
+    expect((state().selectedRow, state().selectedCol), (1, 1));
+    // Down from (1,1): (2,1),(3,1),(4,1) are givens → stays.
+    notifier().moveSelection(1, 0);
+    expect((state().selectedRow, state().selectedCol), (1, 1));
+  });
+
   test('save then load restores the board', () async {
     notifier().selectCell(0, 0);
     notifier().inputDigit(1);
