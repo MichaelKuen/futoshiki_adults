@@ -14,7 +14,6 @@ dependencies:
   riverpod_annotation: ^2.3.5
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
-  google_fonts: ^6.2.1
   flutter_animate: ^4.5.2
   confetti: ^0.7.0
   collection: ^1.18.0
@@ -31,3 +30,17 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/fonts/OFL.txt
+
+  # Bundled so the app never fetches fonts at runtime (works offline and
+  # makes no requests to Google).
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+        - asset: assets/fonts/Nunito-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700

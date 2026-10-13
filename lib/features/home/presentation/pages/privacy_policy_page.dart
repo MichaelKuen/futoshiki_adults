@@ -18,7 +18,8 @@ class PrivacyPolicyPage extends StatelessWidget {
             ),
             SizedBox(height: 16),
             Text(
-              'Futoshiki for Adults does not collect, store, or share any personal data.\n\n'
+              'Futoshiki for Adults does not collect or share any personal data.\n\n'
+              'Your saved game and settings are stored on this device only.\n\n'
               'This app works entirely offline. No internet connection is required to play.\n\n'
               'This app contains no advertisements of any kind.\n\n'
               'No in-app purchases are available.\n\n'

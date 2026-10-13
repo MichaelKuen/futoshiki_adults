@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 const Color kPrimary = Color(0xFFFF6B9D);
 const Color kSecondary = Color(0xFF4FC3F7);
@@ -28,12 +27,13 @@ final ThemeData adultsTheme = ThemeData(
     brightness: Brightness.light,
   ).copyWith(surface: kBackground),
   scaffoldBackgroundColor: kBackground,
-  textTheme: GoogleFonts.nunitoTextTheme(),
+  fontFamily: 'Nunito',
   appBarTheme: AppBarTheme(
     backgroundColor: kPrimary,
     foregroundColor: Colors.white,
     elevation: 0,
-    titleTextStyle: GoogleFonts.nunito(
+    titleTextStyle: const TextStyle(
+      fontFamily: 'Nunito',
       fontSize: 22,
       fontWeight: FontWeight.bold,
       color: Colors.white,
