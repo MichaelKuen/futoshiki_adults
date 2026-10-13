@@ -3,53 +3,6 @@ import '../models/board.dart';
 import '../models/constraint.dart';
 
 class FutoshikiEngine {
-  /// Returns true if placing [digit] at (row, col) is immediately legal:
-  ///   - digit not already in the same row (among filled cells)
-  ///   - digit not already in the same column (among filled cells)
-  ///   - no constraint involving (row, col) is violated when both cells filled
-  bool canPlace(FutoshikiBoard board, int row, int col, int digit) {
-    final n = board.size;
-
-    for (int c = 0; c < n; c++) {
-      if (c == col) continue;
-      if (board.cells[row][c].value == digit) return false;
-    }
-
-    for (int r = 0; r < n; r++) {
-      if (r == row) continue;
-      if (board.cells[r][col].value == digit) return false;
-    }
-
-    for (final con in board.constraints) {
-      final involves = (con.row1 == row && con.col1 == col) ||
-          (con.row2 == row && con.col2 == col);
-      if (!involves) continue;
-
-      int val1 = (con.row1 == row && con.col1 == col)
-          ? digit
-          : board.cells[con.row1][con.col1].value;
-      int val2 = (con.row2 == row && con.col2 == col)
-          ? digit
-          : board.cells[con.row2][con.col2].value;
-
-      if (val1 == 0 || val2 == 0) continue;
-
-      if (con.isLessThan && val1 >= val2) return false;
-      if (!con.isLessThan && val1 <= val2) return false;
-    }
-
-    return true;
-  }
-
-  /// Returns a set of "$row,$col" keys for every cell that violates a rule
-  /// (union of row/col duplicates and constraint violations).
-  Set<String> computeErrors(FutoshikiBoard board) {
-    return {
-      ...computeRowColErrors(board),
-      ...computeConstraintErrors(board),
-    };
-  }
-
   /// Returns error keys for row and column duplicate violations only.
   Set<String> computeRowColErrors(FutoshikiBoard board) {
     final n = board.size;
