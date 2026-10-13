@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/platform.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/logic/futoshiki_engine.dart';
 import '../../domain/models/cell.dart';
@@ -38,6 +39,8 @@ class FutoshikiGrid extends ConsumerWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
+        // Web: ivory gaps between cells (otherwise the shadow shows through).
+        color: isWebEmbed ? kBackground : null,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(

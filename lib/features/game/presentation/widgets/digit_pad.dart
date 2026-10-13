@@ -24,7 +24,7 @@ class DigitPad extends ConsumerWidget {
     return Row(
       children: [
         for (int digit = 1; digit <= n; digit++) ...[
-          Flexible(
+          Expanded(
             child: _DigitButton(
               digit: digit,
               board: board,
@@ -104,6 +104,7 @@ class _DigitButton extends StatelessWidget {
 
     if (complete) {
       button = Stack(
+        fit: StackFit.passthrough,
         children: [
           Opacity(opacity: 0.35, child: button),
           const Positioned(

@@ -88,6 +88,20 @@ void expectFits(WidgetTester tester, Size size, {required double minBoard}) {
   expect(board.width, greaterThanOrEqualTo(minBoard),
       reason: 'board ${board.width.toStringAsFixed(0)}px at $size');
 
+  // Digit buttons share the full row width (no collapsing to text width).
+  final pad = find.byType(DigitPad);
+  if (pad.evaluate().isNotEmpty) {
+    final padW = tester.getSize(pad).width;
+    final buttons =
+        find.descendant(of: pad, matching: find.byType(ElevatedButton));
+    final count = buttons.evaluate().length;
+    for (final b in buttons.evaluate()) {
+      expect(tester.getSize(find.byWidget(b.widget)).width,
+          greaterThan(padW / count * 0.8),
+          reason: 'digit button too narrow at $size');
+    }
+  }
+
   for (final f in [find.byType(DigitPad), find.byType(ActionRow)]) {
     for (final e in f.evaluate()) {
       final r = tester.getRect(find.byWidget(e.widget));
