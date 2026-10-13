@@ -41,11 +41,21 @@ void main() {
     expect(state().mistakes, 0);
   });
 
-  test('wrong digit counts a mistake', () {
+  test('digit that breaks a rule counts a mistake', () {
+    // Row 0 already holds 3 at (0,2) → repeated digit.
+    notifier().selectCell(0, 0);
+    notifier().inputDigit(3);
+    expect(value(0, 0), 3);
+    expect(state().mistakes, 1);
+  });
+
+  test('wrong but rule-consistent digit does not reveal itself', () {
+    // 2 at (0,0) repeats nothing (column 0 has (1,0) empty) and the
+    // (0,0) < (0,1) inequality is open, but the answer is 1.
     notifier().selectCell(0, 0);
     notifier().inputDigit(2);
     expect(value(0, 0), 2);
-    expect(state().mistakes, 1);
+    expect(state().mistakes, 0);
   });
 
   test('erase clears a player cell', () {
@@ -94,7 +104,7 @@ void main() {
 
   test('reset restores the starting board and clears mistakes', () {
     notifier().selectCell(0, 0);
-    notifier().inputDigit(2);
+    notifier().inputDigit(3);
     notifier().resetPuzzle();
     expect(value(0, 0), 0);
     expect(state().mistakes, 0);

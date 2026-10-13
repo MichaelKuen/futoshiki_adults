@@ -134,11 +134,6 @@ class GameNotifier extends _$GameNotifier {
     final cell = board.getCell(row, col);
     if (cell.isFixed || cell.isRevealed) return;
 
-    final correct = board.getSolution(row, col);
-    final isWrong = digit != correct;
-    int mistakes = state.mistakes;
-    if (isWrong) mistakes++;
-
     final updatedCell = cell.copyWith(
       value: digit,
       isError: false,
@@ -151,6 +146,16 @@ class GameNotifier extends _$GameNotifier {
     }
 
     final updatedBoard = board.copyWith(cells: newCells);
+
+    // A mistake is an entry that breaks a visible rule (repeated digit or
+    // broken inequality). Comparing against the stored solution here would
+    // leak the answer through the counter.
+    final key = '$row,$col';
+    final breaksRule =
+        _engine.computeRowColErrors(updatedBoard).contains(key) ||
+            _engine.computeConstraintErrors(updatedBoard).contains(key);
+    final mistakes = breaksRule ? state.mistakes + 1 : state.mistakes;
+
     final errorCells = _applyErrors(updatedBoard);
     final finalBoard = updatedBoard.copyWith(cells: errorCells);
     state = state.copyWith(board: finalBoard, mistakes: mistakes);

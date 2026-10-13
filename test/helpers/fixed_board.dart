@@ -13,7 +13,7 @@ const List<List<int>> kSolution = [
 ];
 
 /// Cells left empty for the player; everything else is a given.
-const Set<(int, int)> kEmpty = {(0, 0), (0, 1), (1, 1), (2, 2)};
+const Set<(int, int)> kEmpty = {(0, 0), (0, 1), (1, 0), (1, 1), (2, 2)};
 
 const List<FutoshikiConstraint> kConstraints = [
   // (0,0)=1 < (0,1)=2
